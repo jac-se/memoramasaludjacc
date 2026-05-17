@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Memorama Salud Jacc</string>
+    <string name="play_games_app_id">000000000000</string>
+    <string name="achievement_unlock_5_levels">CgkI_REEMPLAZA_ID_5</string>
+    <string name="achievement_unlock_10_levels">CgkI_REEMPLAZA_ID_10</string>
+    <string name="achievement_unlock_20_levels">CgkI_REEMPLAZA_ID_20</string>
 </resources>

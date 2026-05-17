@@ -3,13 +3,12 @@ package cisneros.memoramasaludjacc
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.google.android.gms.games.PlayGamesSdk
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC) // <—
+        PlayGamesSdk.initialize(this)
         setContent { App() }
     }
-
-
 }
