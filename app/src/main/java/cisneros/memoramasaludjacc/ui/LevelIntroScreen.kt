@@ -60,7 +60,7 @@ private val difficultyColors = listOf(
 
 /**
  * Two-phase intro screen:
- *   Phase 1 — Dr. Jacc narrative dialog with typewriter effect.
+ *   Phase 1 — Dr. César narrative dialog with typewriter effect.
  *   Phase 2 — Hint/preview screen with card emoji hints & difficulty indicator.
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -137,7 +137,7 @@ fun LevelIntroScreen(
                         )
                     }
 
-                    // Dr. Jacc avatar
+                    // Dr. Cesar avatar
                     Box(
                         modifier = Modifier
                             .size(96.dp)
@@ -177,7 +177,9 @@ fun LevelIntroScreen(
                                     text = "▸ Toca para continuar",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 10.dp)
+                                    modifier = Modifier
+                                        .padding(top = 10.dp)
+                                        .clickable { phase = 1 }
                                 )
                             }
                         }

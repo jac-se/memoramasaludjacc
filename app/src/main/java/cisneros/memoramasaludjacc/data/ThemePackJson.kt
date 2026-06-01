@@ -31,7 +31,7 @@ object ThemeRepository {
 
     val levels = listOf(
         buildLevel(1, "Hidratacion", "Reconoce habitos basicos para mantener buena hidratacion.",
-            "Hola, soy el Dr. César Leonardo👨‍⚕️. Hoy hablaremos del agua 💧, la base de la vida. ¿Sabias que cuando hace mucho calor 🥵 tu cuerpo pierde liquidos? El suero oral 🧂 recupera electrolitos y revisar que tu orina sea clara 🚽 es señal de buena hidratacion. ¡Encuentra los pares correctos!",
+            "Hola, soy el Dr. César 👨‍⚕️. Hoy hablaremos del agua 💧, la base de la vida. ¿Sabias que cuando hace mucho calor 🥵 tu cuerpo pierde liquidos? El suero oral 🧂 recupera electrolitos y revisar que tu orina sea clara 🚽 es señal de buena hidratacion. ¡Encuentra los pares correctos!",
             Color(0xFF81D4FA), listOf(
             CardPair(left = "💧 Agua", right = "Hidrata el cuerpo"),
             CardPair(left = "🧂 Suero oral", right = "Recupera electrolitos"),
@@ -55,7 +55,7 @@ object ThemeRepository {
             CardPair(left = "🚻 Despues de bano", right = "Previene contagio")
         )),
         buildLevel(4, "Higiene Bucal", "Relaciona habitos dentales con prevencion de caries.",
-            "👨‍⚕️ Tu sonrisa es tu carta de presentacion. El cepillado 🪥 debe hacerse 2 veces al dia para mantener dientes limpios. El hilo dental 🧵 limpia los espacios donde el cepillo no llega. El azucar 🍬 es el principal enemigo de tus dientes. ¡Y no olvides visitar al dentista 🦷 regularmente!",
+            "👨‍⚕️ Tu sonrisa es tu carta de presentacion. El cepillado 🪥 debe hacerse 3 veces al dia para mantener dientes limpios. El hilo dental 🧵 limpia los espacios donde el cepillo no llega. El azucar 🍬 es el principal enemigo de tus dientes. ¡Y no olvides visitar al dentista 🦷 regularmente!",
             Color(0xFF80CBC4), listOf(
             CardPair(left = "🪥 Cepillado", right = "2 veces al dia"),
             CardPair(left = "🧵 Hilo dental", right = "Limpia espacios"),
@@ -190,7 +190,7 @@ object ThemeRepository {
             CardPair(left = "😴 Dormir bien", right = "Recuperacion total"),
             CardPair(left = "🏃 Moverse diario", right = "Energia y bienestar")
         )),
-        // === NUEVOS NIVELES 21-30 ===
+        // === NUEVOS NIVELES 21-40 ===
         buildLevel(21, "Diabetes", "Reconoce senales y controles de glucosa en sangre.",
             "👨‍⚕️ La diabetes es una condicion silenciosa pero manejable. Una glucosa 🩸 muy alta en sangre puede provocar sed extrema y cansancio. La insulina 💉 es la hormona que regula el azucar. El ejercicio 🏃 mejora la sensibilidad a la insulina. Y llevar un control medico 🩺 regular es fundamental. ¡Aprende a identificar las señales!",
             Color(0xFFFFE0B2), listOf(
@@ -264,12 +264,92 @@ object ThemeRepository {
             CardPair(left = "🚨 Señal alarma", right = "Llamar emergencias")
         )),
         buildLevel(30, "Epidemiologia", "Conceptos basicos de salud publica y control de enfermedades.",
-            "👨‍⚕️ ¡Llegaste al nivel final, nivel 30! La epidemiologia estudia como se distribuyen y controlan las enfermedades en la poblacion. Una endemia 📍 es una enfermedad que se mantiene en una region especifica. Una epidemia 📈 ocurre cuando hay un aumento inusual de casos. Una pandemia 🌍 afecta a multiples paises o continentes. Y la vigilancia epidemiologica 🔭 permite detectar brotes a tiempo. ¡Eres un experto en salud!",
+            "👨‍⚕️ ¡Llegaste al nivel 30! La epidemiologia estudia como se distribuyen y controlan las enfermedades en la poblacion. Una endemia 📍 es una enfermedad que se mantiene en una region especifica. Una epidemia 📈 ocurre cuando hay un aumento inusual de casos. Una pandemia 🌍 afecta a multiples paises o continentes. Y la vigilancia epidemiologica 🔭 permite detectar brotes a tiempo. ¡Vas excelente!",
             Color(0xFFE0F2F1), listOf(
             CardPair(left = "📍 Endemia", right = "Region especifica"),
             CardPair(left = "📈 Epidemia", right = "Aumento inusual"),
             CardPair(left = "🌍 Pandemia", right = "Extension mundial"),
             CardPair(left = "🔭 Vigilancia", right = "Detecta brotes")
+        )),
+        buildLevel(31, "EcoSalud: Agua Segura", "Identifica practicas para consumir agua segura y evitar enfermedades.",
+            "👨‍⚕️ Nuevo tema: EcoSalud 🌿. Empezamos con agua segura 🚰. Hervir el agua 🔥 reduce microbios. Guardarla en recipiente limpio 🫙 evita contaminacion. Usar cloro 💧 cuando sea necesario ayuda a desinfectar. Y lavarte las manos 🧼 antes de preparar bebidas protege a tu familia.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🚰 Agua segura", right = "Evita infecciones"),
+            CardPair(left = "🔥 Hervir", right = "Reduce microbios"),
+            CardPair(left = "🫙 Recipiente", right = "Evita contaminacion"),
+            CardPair(left = "💧 Cloro", right = "Desinfecta agua")
+        )),
+        buildLevel(32, "EcoSalud: Aire Limpio", "Relaciona acciones en casa con mejor calidad del aire.",
+            "👨‍⚕️ El aire que respiras importa 🌬️. Ventilar la casa 🪟 ayuda a renovar el aire. Evitar humo de tabaco 🚭 protege los pulmones. Limpiar el polvo 🧽 reduce alergias. Y si hay humo o contaminacion, usar cubrebocas 😷 puede ayudarte.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🪟 Ventilar", right = "Renueva el aire"),
+            CardPair(left = "🚭 Sin humo", right = "Protege pulmones"),
+            CardPair(left = "🧽 Limpieza", right = "Reduce alergias"),
+            CardPair(left = "😷 Cubrebocas", right = "Filtra particulas")
+        )),
+        buildLevel(33, "EcoSalud: Mosquitos", "Previene criaderos y reduce riesgo de enfermedades transmitidas por mosquitos.",
+            "👨‍⚕️ Los mosquitos 🦟 se reproducen en agua estancada. Voltear cubetas 🪣 y tapar recipientes 🛑 corta el ciclo. Usar repelente 🧴 reduce picaduras. Colocar mosquiteros 🪟 ayuda a dormir seguro. ¡Cuidar el entorno es cuidar tu salud!",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🦟 Mosquito", right = "Se cria en agua"),
+            CardPair(left = "🪣 Voltear", right = "Evita criaderos"),
+            CardPair(left = "🧴 Repelente", right = "Reduce picaduras"),
+            CardPair(left = "🪟 Mosquitero", right = "Bloquea entrada")
+        )),
+        buildLevel(34, "EcoSalud: Residuos", "Distingue practicas que mantienen limpio tu entorno y evitan plagas.",
+            "👨‍⚕️ La basura mal manejada atrae plagas 🐀. Separar residuos ♻️ facilita el reciclaje. Cerrar bien las bolsas 🗑️ evita olores. Sacar la basura a tiempo ⏰ reduce moscas. Y mantener patios limpios 🧹 ayuda a prevenir enfermedades.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "♻️ Separar", right = "Facilita reciclaje"),
+            CardPair(left = "🗑️ Bolsa cerrada", right = "Evita plagas"),
+            CardPair(left = "⏰ A tiempo", right = "Reduce moscas"),
+            CardPair(left = "🧹 Patio limpio", right = "Previene riesgos")
+        )),
+        buildLevel(35, "EcoSalud: Reciclaje", "Relaciona materiales comunes con su manejo correcto.",
+            "👨‍⚕️ Reciclar es una accion pequena con gran impacto 🌎. El plastico 🧴 se debe enjuagar. El vidrio 🍾 se recicla mejor sin residuos. El carton 📦 se aplasta para ahorrar espacio. Y las pilas 🔋 no van con la basura comun: llévalas a un centro de acopio.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🧴 Plastico", right = "Enjuagar antes"),
+            CardPair(left = "🍾 Vidrio", right = "Sin residuos"),
+            CardPair(left = "📦 Carton", right = "Aplastar"),
+            CardPair(left = "🔋 Pilas", right = "Centro acopio")
+        )),
+        buildLevel(36, "EcoSalud: Alimentos Seguros", "Previene enfermedades por alimentos con higiene y almacenamiento.",
+            "👨‍⚕️ La seguridad alimentaria empieza en casa 🍲. Lavar frutas y verduras 🥬 reduce microbios. Cocinar bien 🍳 elimina bacterias. Refrigerar alimentos ❄️ evita descomposicion. Y separar crudo y cocido 🔪 reduce contaminacion cruzada.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🥬 Lavar", right = "Reduce microbios"),
+            CardPair(left = "🍳 Cocinar", right = "Elimina bacterias"),
+            CardPair(left = "❄️ Refrigerar", right = "Evita descomposicion"),
+            CardPair(left = "🔪 Separar", right = "Evita cruce")
+        )),
+        buildLevel(37, "EcoSalud: Hogar Seguro", "Identifica riesgos en casa y acciones para prevenir accidentes.",
+            "👨‍⚕️ Un hogar seguro previene accidentes 🏠. Guardar quimicos fuera de alcance 🧴 protege a ninos. Mantener pasillos libres 🚪 evita caidas. Revisar cables 🔌 reduce riesgos electricos. Y tener numeros de emergencia 📞 a la mano ayuda en situaciones urgentes.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🧴 Quimicos", right = "Fuera de alcance"),
+            CardPair(left = "🚪 Pasillo libre", right = "Evita caidas"),
+            CardPair(left = "🔌 Cables", right = "Reduce riesgo"),
+            CardPair(left = "📞 Emergencia", right = "Respuesta rapida")
+        )),
+        buildLevel(38, "EcoSalud: Ruido", "Relaciona el ruido con salud y medidas de proteccion.",
+            "👨‍⚕️ El ruido excesivo 🔊 afecta tu salud. Exposicion prolongada 👂 puede danar la audicion. Descansar en un ambiente tranquilo 😴 mejora el sueno. Bajar el volumen 🎧 protege tus oidos. Y usar proteccion auditiva 🦻 en trabajo ruidoso reduce daño.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🔊 Ruido", right = "Afecta salud"),
+            CardPair(left = "👂 Exposicion", right = "Daña audicion"),
+            CardPair(left = "🎧 Volumen", right = "Bajar protege"),
+            CardPair(left = "🦻 Proteccion", right = "Reduce daño")
+        )),
+        buildLevel(39, "EcoSalud: Calor Extremo", "Reconoce medidas para prevenir golpe de calor y deshidratacion.",
+            "👨‍⚕️ En dias muy calurosos ☀️, tu cuerpo necesita apoyo. Beber agua 💧 con frecuencia previene deshidratacion. Buscar sombra 🌳 reduce el riesgo. Usar ropa ligera 👕 ayuda a enfriarte. Y si hay mareo o confusion 🚑, pide ayuda de inmediato.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "☀️ Calor", right = "Riesgo golpe"),
+            CardPair(left = "💧 Agua", right = "Previene deshidratacion"),
+            CardPair(left = "🌳 Sombra", right = "Baja temperatura"),
+            CardPair(left = "🚑 Alarma", right = "Pedir ayuda")
+        )),
+        buildLevel(40, "EcoSalud: Humo en Casa", "Identifica como reducir humo y proteger vias respiratorias.",
+            "👨‍⚕️ El humo en interiores 🏠 puede irritar pulmones. Cocinar con ventilacion 🪟 reduce concentracion. Evitar quemar basura 🔥 disminuye toxicos. Mantener estufa en buen estado 🛠️ mejora la combustion. Y si hay tos o irritacion 😮‍💨, sal a un lugar con aire limpio.",
+            Color(0xFFB7E4C7), listOf(
+            CardPair(left = "🏠 Humo", right = "Irrita pulmones"),
+            CardPair(left = "🪟 Ventilacion", right = "Reduce humo"),
+            CardPair(left = "🔥 No quemar", right = "Menos toxicos"),
+            CardPair(left = "🛠️ Estufa", right = "Mejor combustion")
         ))
     )
 }
