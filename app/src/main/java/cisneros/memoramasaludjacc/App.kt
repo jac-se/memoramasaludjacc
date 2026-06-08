@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -67,6 +69,16 @@ import cisneros.memoramasaludjacc.util.ProgressStore
 import kotlinx.coroutines.launch
 
 private val difficultyNames = listOf("Facil", "Normal", "Dificil", "Experto")
+
+private fun leaderboardIdForLevel(context: android.content.Context, levelNumber: Int): String? {
+    val resourceId = context.resources.getIdentifier(
+        "leaderboard_level_$levelNumber",
+        "string",
+        context.packageName
+    )
+    if (resourceId == 0) return null
+    return context.getString(resourceId).takeUnless { it.startsWith("CgkI_REEMPLAZA") || it.isBlank() }
+}
 
 private fun targetMovesFor(levelNumber: Int, pairs: Int): Int {
     val base = pairs * 2
@@ -209,6 +221,7 @@ fun App() {
 
     MemoramaSaludJaccTheme {
         Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 CenterAlignedTopAppBar(
                     title = { Text("Memorama Salud JACC") },
@@ -225,7 +238,12 @@ fun App() {
                 )
             }
         ) { inner ->
-            Surface(modifier = Modifier.fillMaxSize().padding(inner)) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                color = MaterialTheme.colorScheme.background
+            ) {
                 if (introLevel != null) {
                     val currentIntro = introLevel
                     LevelIntroScreen(
@@ -403,6 +421,7 @@ fun App() {
                     }
                 } else {
                     val current = playingLevel
+                    val leaderboardId = leaderboardIdForLevel(ctx, current.number)
                     GameBoard(
                         level = current,
                         levels = levels,
@@ -413,7 +432,7 @@ fun App() {
                             selectedLevelNumber = it.number
                         },
                         onExit = { playingLevelNumber = null },
-                        onCompleted = { moves ->
+                        onCompleted = { moves, elapsedMillis ->
                             val currentNumber = current.number
                             val nextLevel = (currentNumber + 1).coerceAtMost(levels.size)
                             val target = targetMovesFor(currentNumber, current.pack.pairs.size)
@@ -421,18 +440,31 @@ fun App() {
                             scope.launch {
                                 ProgressStore.saveBestMoves(ctx, currentNumber, moves)
                                 ProgressStore.unlockUpTo(ctx, nextLevel)
+                                if (playGamesSignedIn && sidekick != null && leaderboardId != null) {
+                                    sidekick.submitLeaderboardTime(leaderboardId, elapsedMillis)
+                                }
                             }
 
                             adaptiveMessage = if (currentNumber < levels.size) {
                                 if (moves <= target) {
                                     selectedLevelNumber = levels[currentNumber].number
-                                    "Muy bien: $moves movimientos. Avance sugerido al nivel $nextLevel."
+                                    "Muy bien: $moves movimientos en ${elapsedMillis / 1000}s. Avance sugerido al nivel $nextLevel."
                                 } else {
-                                    "Nivel $nextLevel desbloqueado. Meta adaptiva: bajar de $target movimientos."
+                                    "Nivel $nextLevel desbloqueado en ${elapsedMillis / 1000}s. Meta adaptiva: bajar de $target movimientos."
                                 }
                             } else {
                                 "Completaste los 20 niveles. Repite para mejorar puntajes."
                             }
+                        },
+                        canShowLeaderboard = playGamesSignedIn && leaderboardId != null,
+                        onShowLeaderboard = if (playGamesSignedIn && sidekick != null && leaderboardId != null && activity != null) {
+                            {
+                                scope.launch {
+                                    sidekick.leaderboardIntent(leaderboardId)?.let(activity::startActivity)
+                                }
+                            }
+                        } else {
+                            null
                         }
                     )
                 }

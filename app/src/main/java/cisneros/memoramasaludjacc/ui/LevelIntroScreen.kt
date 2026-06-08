@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -81,6 +84,15 @@ fun LevelIntroScreen(
     // Typewriter state
     var displayedText by rememberSaveable(level.number, difficulty) { mutableStateOf("") }
     var typewriterDone by rememberSaveable(level.number, difficulty) { mutableStateOf(false) }
+    val storyScrollState = rememberScrollState()
+    val handleStoryTap = {
+        if (typewriterDone) {
+            phase = 1
+        } else {
+            displayedText = story
+            typewriterDone = true
+        }
+    }
 
     LaunchedEffect(phase) {
         if (phase == 0) {
@@ -110,13 +122,7 @@ fun LevelIntroScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp)
-                        .clickable {
-                            if (!typewriterDone) {
-                                displayedText = story
-                                typewriterDone = true
-                            }
-                        },
+                        .padding(24.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -151,36 +157,42 @@ fun LevelIntroScreen(
                     Spacer(Modifier.height(8.dp))
 
                     // Speech bubble
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        elevation = CardDefaults.cardElevation(4.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
-                            Text(
-                                text = "Dr. César:",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                text = displayedText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                lineHeight = 22.sp
-                            )
-                            AnimatedVisibility(typewriterDone) {
+                    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = handleStoryTap)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(18.dp)
+                                    .verticalScroll(storyScrollState)
+                            ) {
                                 Text(
-                                    text = "▸ Toca para continuar",
+                                    text = "Dr. César:",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier
-                                        .padding(top = 10.dp)
-                                        .clickable { phase = 1 }
+                                    fontWeight = FontWeight.Bold
                                 )
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    text = displayedText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    lineHeight = 22.sp
+                                )
+                                AnimatedVisibility(typewriterDone) {
+                                    Text(
+                                        text = "▸ Toca para continuar",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -198,7 +210,7 @@ fun LevelIntroScreen(
                         ) { Text("Omitir") }
 
                         Button(
-                            onClick = { if (typewriterDone) phase = 1 else { displayedText = story; typewriterDone = true } },
+                            onClick = handleStoryTap,
                             modifier = Modifier.weight(2f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = themeColor,

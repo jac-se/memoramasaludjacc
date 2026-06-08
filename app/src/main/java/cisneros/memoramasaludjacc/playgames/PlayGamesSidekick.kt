@@ -3,6 +3,7 @@ package cisneros.memoramasaludjacc.playgames
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import cisneros.memoramasaludjacc.R
 import com.google.android.gms.games.PlayGames
 import kotlinx.coroutines.tasks.await
@@ -33,6 +34,23 @@ class PlayGamesSidekick(private val activity: Activity) {
         if (unlockedLevel >= 20) {
             client.unlock(activity.getString(R.string.achievement_unlock_20_levels))
         }
+    }
+
+    suspend fun submitLeaderboardTime(leaderboardId: String, elapsedMillis: Long) {
+        runCatching {
+            PlayGames
+                .getLeaderboardsClient(activity)
+                .submitScore(leaderboardId, elapsedMillis)
+        }
+    }
+
+    suspend fun leaderboardIntent(leaderboardId: String): Intent? {
+        return runCatching {
+            PlayGames
+                .getLeaderboardsClient(activity)
+                .getLeaderboardIntent(leaderboardId)
+                .await()
+        }.getOrNull()
     }
 }
 

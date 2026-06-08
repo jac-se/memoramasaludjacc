@@ -2,6 +2,7 @@ package cisneros.memoramasaludjacc.ui
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.SystemClock
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -91,6 +92,13 @@ private fun targetMovesFor(pairCount: Int, difficulty: Int): Int {
     return base + tolerance
 }
 
+private fun formatElapsedTime(elapsedMillis: Long): String {
+    val totalSeconds = (elapsedMillis / 1000).coerceAtLeast(0)
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
+}
+
 /**
  * Builds the card list for the given level and difficulty.
  * Hard/Expert modes mix in pairs from other unlocked levels.
@@ -136,7 +144,9 @@ fun GameBoard(
     difficulty: Int,
     onNavigateToLevel: (ThemeRepository.Level) -> Unit,
     onExit: () -> Unit,
-    onCompleted: (moves: Int) -> Unit = {}
+    onCompleted: (moves: Int, elapsedMillis: Long) -> Unit = { _, _ -> },
+    onShowLeaderboard: (() -> Unit)? = null,
+    canShowLeaderboard: Boolean = false
 ) {
     val pack = level.pack
     val themeColor = pack.themeColor
@@ -146,6 +156,9 @@ fun GameBoard(
     var openedIds by rememberSaveable(level.number, seed, difficulty) { mutableStateOf<List<Int>>(emptyList()) }
     var matchedPairIds by rememberSaveable(level.number, seed, difficulty) { mutableStateOf<List<Int>>(emptyList()) }
     var moves  by rememberSaveable(level.number, seed, difficulty) { mutableStateOf(0) }
+    var startElapsedRealtime by rememberSaveable(level.number, seed, difficulty) {
+        mutableStateOf(SystemClock.elapsedRealtime())
+    }
     val scope  = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -159,7 +172,15 @@ fun GameBoard(
 
     val isCompleted = matchedPairIds.size == pairCount
     LaunchedEffect(isCompleted, moves, seed) {
-        if (isCompleted) onCompleted(moves)
+        if (isCompleted) {
+            val elapsedMillis = (SystemClock.elapsedRealtime() - startElapsedRealtime).coerceAtLeast(0L)
+            onCompleted(moves, elapsedMillis)
+        }
+    }
+    val elapsedMillis = if (isCompleted) {
+        (SystemClock.elapsedRealtime() - startElapsedRealtime).coerceAtLeast(0L)
+    } else {
+        (SystemClock.elapsedRealtime() - startElapsedRealtime).coerceAtLeast(0L)
     }
 
     val configuration = LocalConfiguration.current
@@ -329,6 +350,14 @@ fun GameBoard(
                             color = if (bestMoves != null) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Tiempo", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            text = formatElapsedTime(elapsedMillis),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 AnimatedVisibility(visible = isCompleted, enter = fadeIn(), exit = fadeOut()) {
@@ -337,7 +366,7 @@ fun GameBoard(
                         shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            "🎉 ¡Completado! $moves movimientos",
+                            "🎉 ¡Completado! $moves movimientos en ${formatElapsedTime(elapsedMillis)}",
                             modifier = Modifier.padding(8.dp),
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Bold
@@ -353,7 +382,10 @@ fun GameBoard(
         Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = { seed++ },
+                    onClick = {
+                        seed++
+                        startElapsedRealtime = SystemClock.elapsedRealtime()
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -378,6 +410,16 @@ fun GameBoard(
                     Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("Compartir", fontSize = 12.sp)
+                }
+            }
+
+            if (canShowLeaderboard && onShowLeaderboard != null) {
+                FilledTonalButton(
+                    onClick = onShowLeaderboard,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isCompleted
+                ) {
+                    Text("Ver ranking del nivel")
                 }
             }
 
