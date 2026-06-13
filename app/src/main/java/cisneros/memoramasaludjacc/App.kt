@@ -22,10 +22,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +38,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,6 +72,12 @@ import cisneros.memoramasaludjacc.util.ProgressStore
 import kotlinx.coroutines.launch
 
 private val difficultyNames = listOf("Facil", "Normal", "Dificil", "Experto")
+
+private enum class HomeScreen {
+    LevelPicker,
+    PlayGames,
+    MainMenu
+}
 
 private fun leaderboardIdForLevel(context: android.content.Context, levelNumber: Int): String? {
     val resourceId = context.resources.getIdentifier(
@@ -189,6 +198,358 @@ fun LevelItem(
     }
 }
 
+@Composable
+private fun DifficultySelector(
+    selectedDifficulty: Int,
+    onSelectDifficulty: (Int) -> Unit
+) {
+    Text(
+        text = "Dificultad",
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold
+    )
+    Spacer(Modifier.height(6.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        difficultyNames.forEachIndexed { index, label ->
+            Button(
+                onClick = { onSelectDifficulty(index) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (selectedDifficulty == index) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    },
+                    contentColor = if (selectedDifficulty == index) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    }
+                )
+            ) {
+                Text(label, fontSize = 11.sp, maxLines = 1)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactLevelPickerScreen(
+    levels: List<ThemeRepository.Level>,
+    unlockedLevel: Int,
+    selectedLevelNumber: Int,
+    onSelectLevel: (Int) -> Unit,
+    onContinue: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+            ),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    "Elige tu nivel",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Desbloqueados: $unlockedLevel de ${levels.size}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(1),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(levels) { level ->
+                val unlocked = level.number <= unlockedLevel
+                LevelItem(
+                    level = level,
+                    unlocked = unlocked,
+                    isSelected = selectedLevelNumber == level.number,
+                    onClick = { onSelectLevel(level.number) }
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onSkip,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Omitir")
+            }
+            Button(
+                onClick = onContinue,
+                modifier = Modifier.weight(1.3f)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Continuar")
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactMainMenuScreen(
+    levels: List<ThemeRepository.Level>,
+    unlockedLevel: Int,
+    selectedLevel: ThemeRepository.Level,
+    selectedDifficulty: Int,
+    adaptiveMessage: String,
+    onBackToLevels: () -> Unit,
+    onSelectDifficulty: (Int) -> Unit,
+    onRandomPlay: () -> Unit,
+    onStartSelected: () -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+            ),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Nivel ${selectedLevel.number}",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            selectedLevel.title.substringAfter(" - "),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    OutlinedButton(onClick = onBackToLevels) {
+                        Text("Cambiar")
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+        DifficultySelector(
+            selectedDifficulty = selectedDifficulty,
+            onSelectDifficulty = onSelectDifficulty
+        )
+        Spacer(Modifier.height(12.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = selectedLevel.pack.themeColor.copy(alpha = 0.16f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    adaptiveMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    "Has desbloqueado $unlockedLevel de ${levels.size} niveles.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onRandomPlay,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Shuffle,
+                    contentDescription = "Jugar Aleatorio",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Aleatorio", fontSize = 14.sp)
+            }
+
+            Button(
+                onClick = onStartSelected,
+                modifier = Modifier.weight(1.2f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("Jugar", fontSize = 14.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactPlayGamesScreen(
+    playGamesSignedIn: Boolean,
+    onBack: () -> Unit,
+    onConnect: () -> Unit,
+    onContinue: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+            ),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    "Play Games",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    if (playGamesSignedIn) "Tu cuenta ya está conectada." else "Puedes conectarte ahora o continuar sin iniciar sesión.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (playGamesSignedIn) {
+                    Color(0xFF2E7D32).copy(alpha = 0.12f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                }
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onConnect,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (playGamesSignedIn) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(if (playGamesSignedIn) "Conectado" else "Conectar Play Games")
+                }
+
+                Text(
+                    if (playGamesSignedIn) "Ya puedes usar marcadores y progreso ligado a tu cuenta."
+                    else "Si lo omites, el juego seguirá funcionando localmente.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onBack,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Atrás")
+            }
+            OutlinedButton(
+                onClick = onSkip,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Omitir")
+            }
+            Button(
+                onClick = onContinue,
+                modifier = Modifier.weight(1.2f)
+            ) {
+                Text("Seguir")
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
@@ -204,6 +565,11 @@ fun App() {
     var selectedDifficulty by rememberSaveable { mutableStateOf(1) }
     var adaptiveMessage by rememberSaveable { mutableStateOf("Completa un nivel para desbloquear el siguiente.") }
     var playGamesSignedIn by rememberSaveable { mutableStateOf(false) }
+    val configuration = LocalConfiguration.current
+    val isCompactScreen = configuration.smallestScreenWidthDp < 600
+    var homeScreen by rememberSaveable(isCompactScreen) {
+        mutableStateOf(if (isCompactScreen) HomeScreen.LevelPicker else HomeScreen.MainMenu)
+    }
 
     if (selectedLevelNumber > unlockedLevel) {
         selectedLevelNumber = levels.first { it.number <= unlockedLevel }.number
@@ -230,8 +596,11 @@ fun App() {
                             IconButton(onClick = {
                                 playingLevelNumber = null
                                 introLevelNumber = null
+                                if (isCompactScreen) {
+                                    homeScreen = HomeScreen.MainMenu
+                                }
                             }) {
-                                Icon(Icons.Filled.ArrowBack, contentDescription = "Regresar")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
                             }
                         }
                     }
@@ -259,135 +628,43 @@ fun App() {
                         }
                     )
                 } else if (playingLevel == null) {
-                    val configuration = LocalConfiguration.current
                     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                     val columns = if (isLandscape) 3 else 2
 
-                    Column(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(12.dp)
-                    ) {
-                        // Header info card
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
-                            ),
-                            shape = MaterialTheme.shapes.large
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        "Selecciona Nivel",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        "Desbloqueados: $unlockedLevel de ${levels.size}",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
+                    if (isCompactScreen) {
+                        when (homeScreen) {
+                            HomeScreen.LevelPicker -> CompactLevelPickerScreen(
+                                levels = levels,
+                                unlockedLevel = unlockedLevel,
+                                selectedLevelNumber = selectedLevelNumber,
+                                onSelectLevel = { selectedLevelNumber = it },
+                                onContinue = { homeScreen = HomeScreen.PlayGames },
+                                onSkip = { homeScreen = HomeScreen.PlayGames }
+                            )
 
-                                Button(
-                                    onClick = {
-                                        if (sidekick == null) return@Button
+                            HomeScreen.PlayGames -> CompactPlayGamesScreen(
+                                playGamesSignedIn = playGamesSignedIn,
+                                onBack = { homeScreen = HomeScreen.LevelPicker },
+                                onConnect = {
+                                    if (sidekick != null) {
                                         scope.launch {
                                             playGamesSignedIn = sidekick.signIn()
                                         }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (playGamesSignedIn) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
-                                    )
-                                ) {
-                                    Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(18.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        if (playGamesSignedIn) "Conectado" else "Play Games",
-                                        fontSize = 13.sp
-                                    )
-                                }
-                            }
-                        }
+                                    }
+                                },
+                                onContinue = { homeScreen = HomeScreen.MainMenu },
+                                onSkip = { homeScreen = HomeScreen.MainMenu }
+                            )
 
-                        Spacer(Modifier.height(10.dp))
-
-                        Text(
-                            text = "Dificultad",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            difficultyNames.forEachIndexed { index, label ->
-                                Button(
-                                    onClick = { selectedDifficulty = index },
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (selectedDifficulty == index) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.secondaryContainer
-                                        },
-                                        contentColor = if (selectedDifficulty == index) {
-                                            MaterialTheme.colorScheme.onPrimary
-                                        } else {
-                                            MaterialTheme.colorScheme.onSecondaryContainer
-                                        }
-                                    )
-                                ) {
-                                    Text(label, fontSize = 11.sp, maxLines = 1)
-                                }
-                            }
-                        }
-
-                        Spacer(Modifier.height(10.dp))
-
-                        // Grid of levels
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(columns),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            items(levels) { level ->
-                                val unlocked = level.number <= unlockedLevel
-                                LevelItem(
-                                    level = level,
-                                    unlocked = unlocked,
-                                    isSelected = selectedLevelNumber == level.number,
-                                    onClick = { selectedLevelNumber = level.number }
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            text = adaptiveMessage,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                        )
-                        Spacer(Modifier.height(8.dp))
-
-                        // Bottom play controls
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Random Play Button
-                            Button(
-                                onClick = {
+                            HomeScreen.MainMenu -> CompactMainMenuScreen(
+                                levels = levels,
+                                unlockedLevel = unlockedLevel,
+                                selectedLevel = selectedLevel,
+                                selectedDifficulty = selectedDifficulty,
+                                adaptiveMessage = adaptiveMessage,
+                                onBackToLevels = { homeScreen = HomeScreen.LevelPicker },
+                                onSelectDifficulty = { selectedDifficulty = it },
+                                onRandomPlay = {
                                     val unlockedCount = unlockedLevel.coerceAtLeast(1)
                                     val candidateLevels = levels.filter { it.number <= unlockedCount }
                                     if (candidateLevels.isNotEmpty()) {
@@ -396,26 +673,132 @@ fun App() {
                                         introLevelNumber = randomLvl.number
                                     }
                                 },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary
-                                )
+                                onStartSelected = { introLevelNumber = selectedLevel.number }
+                            )
+                        }
+                    } else {
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(12.dp)
+                        ) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
+                                ),
+                                shape = MaterialTheme.shapes.large
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Shuffle,
-                                    contentDescription = "Jugar Aleatorio",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text("Jugar Aleatorio", fontSize = 14.sp)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            "Selecciona Nivel",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            "Desbloqueados: $unlockedLevel de ${levels.size}",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            if (sidekick == null) return@Button
+                                            scope.launch {
+                                                playGamesSignedIn = sidekick.signIn()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (playGamesSignedIn) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            if (playGamesSignedIn) "Conectado" else "Play Games",
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
                             }
 
-                            // Start Selected Level Button
-                            Button(
-                                onClick = { introLevelNumber = selectedLevel.number },
-                                modifier = Modifier.weight(1.2f)
+                            Spacer(Modifier.height(10.dp))
+
+                            DifficultySelector(
+                                selectedDifficulty = selectedDifficulty,
+                                onSelectDifficulty = { selectedDifficulty = it }
+                            )
+
+                            Spacer(Modifier.height(10.dp))
+
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(columns),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Text("Jugar Nivel ${selectedLevel.number}", fontSize = 14.sp)
+                                items(levels) { level ->
+                                    val unlocked = level.number <= unlockedLevel
+                                    LevelItem(
+                                        level = level,
+                                        unlocked = unlocked,
+                                        isSelected = selectedLevelNumber == level.number,
+                                        onClick = { selectedLevelNumber = level.number }
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(10.dp))
+                            Text(
+                                text = adaptiveMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                            )
+                            Spacer(Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        val unlockedCount = unlockedLevel.coerceAtLeast(1)
+                                        val candidateLevels = levels.filter { it.number <= unlockedCount }
+                                        if (candidateLevels.isNotEmpty()) {
+                                            val randomLvl = candidateLevels.random()
+                                            selectedLevelNumber = randomLvl.number
+                                            introLevelNumber = randomLvl.number
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Shuffle,
+                                        contentDescription = "Jugar Aleatorio",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Jugar Aleatorio", fontSize = 14.sp)
+                                }
+
+                                Button(
+                                    onClick = { introLevelNumber = selectedLevel.number },
+                                    modifier = Modifier.weight(1.2f)
+                                ) {
+                                    Text("Jugar Nivel ${selectedLevel.number}", fontSize = 14.sp)
+                                }
                             }
                         }
                     }
